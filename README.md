@@ -13,3 +13,6 @@
 
 ## Other
 - <a href="https://documenter.getpostman.com/view/28599192/2s9YkkeNcz" target="_blank">Api Documentation</a>
+
+## Test case screen shot
+![image](https://github.com/bhavinS-addweb/accredify-test/assets/122769306/9a0542e0-183f-4f0b-b548-d53ea64649f9)
