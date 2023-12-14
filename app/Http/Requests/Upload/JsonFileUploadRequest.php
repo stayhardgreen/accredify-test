@@ -24,7 +24,7 @@ class JsonFileUploadRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'file' => 'required|file|mimetypes:application/json,text/plain'
+            'file' => 'required|file|max:2048|mimetypes:application/json'
         ];
     }
 
