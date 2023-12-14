@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Services;
+namespace App\Traits;
 
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
-class UploadFileService
+trait UploadFileService
 {
     public function uploadFile(UploadedFile $file, $folder = null, $disk = 'local', $filename = null): bool|string
     {

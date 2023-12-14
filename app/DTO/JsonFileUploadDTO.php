@@ -4,9 +4,11 @@ namespace App\DTO;
 
 use App\Exceptions\RecipientException;
 use App\Exceptions\ValidateIssuerException;
+use App\Exceptions\ValidateSignatureException;
 use App\Services\GoogleDNSAPIService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class JsonFileUploadDTO
@@ -48,8 +50,7 @@ class JsonFileUploadDTO
     {
         $this
             ->validateIssuerCase1()
-            ->validateIssuerCase2()
-            ->validateIssuerCase3();
+            ->validateIssuerCase2();
 
         return $this;
     }
@@ -75,7 +76,7 @@ class JsonFileUploadDTO
     /**
      * @throws ValidateIssuerException
      */
-    private function validateIssuerCase2(): self
+    private function validateIssuerCase2(): void
     {
         if(empty($this->jsonToArray['data']['issuer']['identityProof']['location'])){
             throw new ValidateIssuerException('issuer must have location in identityProof');
@@ -93,7 +94,6 @@ class JsonFileUploadDTO
 
         $this->checkGoogleDNSApiResponse($dataResponse);
 
-        return $this;
     }
 
     /**
@@ -120,9 +120,56 @@ class JsonFileUploadDTO
 
     /**
      * @throws ValidateIssuerException
+     * @throws ValidateSignatureException
      */
-    private function validateSignature(): void
+    public function validateSignature(): void
     {
+        $hashString = $this->convertArrayForHash($this->jsonToArray['data']);
 
+        if(
+            empty($this->jsonToArray['signature']) ||
+            empty($this->jsonToArray['signature']['targetHash'])
+        ) {
+            throw new ValidateSignatureException('signature is not there.');
+        }
+
+        if($hashString !== $this->jsonToArray['signature']['targetHash']){
+            throw new ValidateSignatureException('targetHash is not matched');
+        }
+    }
+
+    private function buildKeyPath(array|string $array, string $path): array
+    {
+        $result = [];
+        if(is_array($array)){
+            foreach ($array as $key => $value) {
+                if (is_array($value)) {
+                    $result = array_merge($result, $this->buildKeyPath($value, "{$path}.$key"));
+                } else {
+                    $result["{$path}.$key"] = $value;
+                }
+            }
+        } else {
+            $result["{$path}"] = $array;
+        }
+        return $result;
+    }
+
+    private function convertArrayForHash(array $dataArray): string
+    {
+        foreach ($dataArray as $k => &$v){
+            $v = $this->buildKeyPath($v, $k);
+        }
+
+        $dataRes = array();
+        foreach ($dataArray as $value){
+            foreach ($value as $k => $val){
+                $dataRes[] = hash('SHA256','{"'.$k.'":"'.$val.'"}');
+            }
+        }
+        sort($dataRes);
+
+        $implodeSortedArr = '["'.implode('","',$dataRes).'"]';
+        return hash('SHA256',$implodeSortedArr);
     }
 }
