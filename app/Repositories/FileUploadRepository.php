@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\DTO\JsonFileUploadDTO;
+use App\Exceptions\NotValidJsonFoundException;
 use App\Exceptions\RecipientException;
 use App\Exceptions\ValidateIssuerException;
 use App\Exceptions\ValidateSignatureException;
@@ -17,7 +18,7 @@ class FileUploadRepository implements FileUploadRepositoryInterface
 
     private readonly string $uploadedPath;
     private readonly string $uploadDriver;
-    public readonly array $loadJsonDataToArr;
+    public readonly array|null $loadJsonDataToArr;
     private VerificationModel $verificationModel;
     public function __construct()
     {
@@ -71,6 +72,11 @@ class FileUploadRepository implements FileUploadRepositoryInterface
     private function loadJsonFileInArray(): self
     {
         $this->loadJsonDataToArr = Storage::drive($this->uploadDriver)->json($this->uploadedPath);
+
+        if(empty($this->loadJsonDataToArr)){
+            throw new NotValidJsonFoundException('Not Valid Json Found');
+        }
+
         return $this;
     }
 

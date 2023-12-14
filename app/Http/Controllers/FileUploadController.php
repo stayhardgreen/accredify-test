@@ -20,8 +20,8 @@ class FileUploadController extends Controller
     public function uploadJsonFile(JsonFileUploadRequest $fileUploadReq)
     {
         $jsonFileUploadDTO = $fileUploadReq->data();
-        return new VerificationResource(
+        return (new VerificationResource(
             $this->fileUploadRepository->uploadAndSaveFile($jsonFileUploadDTO)
-        );
+        ))->response()->setStatusCode(200);
     }
 }

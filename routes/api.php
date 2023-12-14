@@ -16,13 +16,11 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::post('/register', [AuthController::class,'register']);
-Route::post('/login', [AuthController::class,'login']);
+Route::group(['as' => 'api.v1.'],function() {
+    Route::post('/register', [AuthController::class, 'register'])->name('register');
+    Route::post('/login', [AuthController::class, 'login'])->name('login');
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
-
-Route::group(['prefix' => '/v1/upload/','middleware'=>'auth:sanctum'],function(){
-    Route::post('/json-file', [FileUploadController::class,'uploadJsonFile']);
+    Route::group(['prefix' => '/v1/upload/', 'middleware' => 'auth:sanctum'], function () {
+        Route::post('/file-upload', [FileUploadController::class, 'uploadJsonFile'])->name('file-upload');
+    });
 });
