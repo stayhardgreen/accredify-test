@@ -25,6 +25,9 @@ class FileUploadRepository implements FileUploadRepositoryInterface
         $this->uploadDriver = 'public';
     }
 
+    /**
+     * @throws NotValidJsonFoundException
+     */
     public function uploadAndSaveFile(JsonFileUploadDTO &$jsonFileUploadDTO): VerificationModel
     {
         try {
@@ -69,6 +72,9 @@ class FileUploadRepository implements FileUploadRepositoryInterface
         return $this;
     }
 
+    /**
+     * @throws NotValidJsonFoundException
+     */
     private function loadJsonFileInArray(): self
     {
         $this->loadJsonDataToArr = Storage::drive($this->uploadDriver)->json($this->uploadedPath);
